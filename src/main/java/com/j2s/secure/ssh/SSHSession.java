@@ -6,12 +6,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-interface SSHSession extends Closeable {
-
-	/**
-	 * @param command
-	 */
-	void writeVoid(String command);
+public interface SSHSession extends Closeable {
 
 	/**
 	 * ssh connect

@@ -7,6 +7,11 @@ public interface SSHSyncSession extends SSHSession {
 	/**
 	 * @param command
 	 */
+	void writeVoid(String command);
+
+	/**
+	 * @param command
+	 */
 	String write(String command) throws IOException;
 
 	/**

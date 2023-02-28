@@ -19,7 +19,7 @@ class SSHSessionFactoryTest {
     @Test
     void openSyncSession() {
         try (SSHSyncSession sshSyncSession = SSHSessionFactory.openSyncSession(sessionKey, host, 22, id, pwd);) {
-            String result = sshSyncSession.write("ls");
+            String result = sshSyncSession.write("ll");
             System.out.println(result);
         } catch (JSchException e) {
             e.printStackTrace();

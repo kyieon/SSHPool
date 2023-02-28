@@ -51,15 +51,6 @@ class SSHAsyncSessionImpl extends SSHAbstractSession implements SSHAsyncSession 
 	}
 
 	@Override
-	public void writeVoid(String command) {
-		try {
-			write(command);
-		} catch (Exception e) {
-			log.error("", e);
-		}
-	}
-
-	@Override
 	public void write(String command) throws IOException {
 		log.debug("[" + getSessionKey() + "] write :: " + command);
 		_write(command);
