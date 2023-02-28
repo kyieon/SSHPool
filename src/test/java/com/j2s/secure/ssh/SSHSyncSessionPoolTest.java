@@ -1,13 +1,10 @@
 package com.j2s.secure.ssh;
 
 import com.j2s.secure.SSHSessionConfig;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SSHSyncSessionPoolTest {
 

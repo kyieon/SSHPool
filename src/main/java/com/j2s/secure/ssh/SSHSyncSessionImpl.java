@@ -164,10 +164,7 @@ class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 			}
 		}
 
-		if (isErrorResultMet(result)) {
-			return true;
-		}
-		return false;
+		return isErrorResultMet(result);
 	}
 
 	private static boolean isErrorResultMet(String result) {
