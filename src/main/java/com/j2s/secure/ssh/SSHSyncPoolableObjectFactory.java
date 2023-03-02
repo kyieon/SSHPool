@@ -14,12 +14,8 @@ public class SSHSyncPoolableObjectFactory extends BasePooledObjectFactory<SSHSyn
 
 	private SSHSessionConfig sshSessionConfig;
 
-	protected SSHSyncPoolableObjectFactory(SSHSessionConfig sshSessionConfig) {
+	public SSHSyncPoolableObjectFactory(SSHSessionConfig sshSessionConfig) {
 		this.sshSessionConfig = sshSessionConfig;
-	}
-	
-	public SSHSessionConfig getSshSessionConfig() {
-		return sshSessionConfig;
 	}
 
 	@Override
@@ -27,22 +23,13 @@ public class SSHSyncPoolableObjectFactory extends BasePooledObjectFactory<SSHSyn
 		String sessionKey = UUID.randomUUID().toString();
 		SSHSyncSession session = new SSHSyncSessionImpl(sessionKey);
 		session.connect(sshSessionConfig.getHost(), sshSessionConfig.getPort(), sshSessionConfig.getId(), sshSessionConfig.getPwd());
-		log.info("[" + session.getSessionKey() + "][" + session.toString() + "] makeObject.");
+		log.info("[{}] makeObject.", session.getSessionKey());
 		return session;
 	}
 
 	@Override
-	public PooledObject<SSHSyncSession> wrap(SSHSyncSession o) {
-		return new DefaultPooledObject<>(o);
-	}
-
-	@Override
-	public void destroyObject(PooledObject<SSHSyncSession> p) throws Exception {
-		SSHSyncSession session = p.getObject();
-		synchronized (session) {
-			log.info("[" + session.getSessionKey() + "][" + session.toString() + "] destroyObject.");
-			session.close();
-		}
+	public PooledObject<SSHSyncSession> wrap(SSHSyncSession session) {
+		return new DefaultPooledObject<>(session);
 	}
 
 	@Override
@@ -50,7 +37,7 @@ public class SSHSyncPoolableObjectFactory extends BasePooledObjectFactory<SSHSyn
 		SSHSyncSession session = p.getObject();
 		try {
 			synchronized (session) {
-				log.info("[" + session.getSessionKey() + "][" + session.toString() + "] validateObject.");
+				log.info("[{}] validateObject.", session.getSessionKey());
 				if(!session.isConnected())
 					throw new SSHSessionException("session is not connected.");
 				session.write("pwd", 3);
@@ -66,12 +53,22 @@ public class SSHSyncPoolableObjectFactory extends BasePooledObjectFactory<SSHSyn
 	public void passivateObject(PooledObject<SSHSyncSession> p) throws Exception {
 		SSHSyncSession session = p.getObject();
 		synchronized (session) {
-			log.info("[" + session.getSessionKey() + "][" + session.toString() + "] passivateObject.");
+			log.info("[{}] passivateObject.", session.getSessionKey());
 			try {
 				session.write("cd ~", 3);
 			} catch (Exception e) {
+				log.error("[" + session.getSessionKey() + "] passivateObject fail.", e);
 				throw e; // Pool closed
 			}
+		}
+	}
+
+	@Override
+	public void destroyObject(PooledObject<SSHSyncSession> p) throws Exception {
+		SSHSyncSession session = p.getObject();
+		synchronized (session) {
+			log.info("[{}] destroyObject.", session.getSessionKey());
+			session.close();
 		}
 	}
 }

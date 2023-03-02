@@ -7,19 +7,20 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-class SSHSyncSessionPoolTest {
+import static org.junit.jupiter.api.Assertions.*;
 
-    private SSHSyncSessionPool pool;
+class SSHSyncSessionKeyedPoolTest {
+
+    private SSHSyncSessionKeyedPool pool;
 
     @BeforeEach
     void before() {
         SSHSessionConfig config = new SSHSessionConfig();
-        config.setHost("10.180.92.250");
         config.setPort(22);
         config.setId("ngepc");
         config.setPwd("ngepc./");
 
-        pool = new SSHSyncSessionPool(config);
+        pool = new SSHSyncSessionKeyedPool(config);
     }
 
     @AfterEach
@@ -29,21 +30,7 @@ class SSHSyncSessionPoolTest {
 
     @Test
     void execute() throws Exception {
-        String result = this.pool.execute((session) -> {
-            try {
-                return session.write("ll");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        System.out.println(result);
-
-        Thread.sleep(1 * 1000);
-    }
-
-    @Test
-    void executeOnce() throws Exception {
-        String result = this.pool.executeOnce((session) -> {
+        String result = this.pool.execute("10.180.92.250", (session) -> {
             try {
                 return session.write("ll");
             } catch (IOException e) {
