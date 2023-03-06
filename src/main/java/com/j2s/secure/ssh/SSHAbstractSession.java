@@ -13,7 +13,6 @@ import java.util.Properties;
 @Slf4j(topic = "ssh")
 abstract class SSHAbstractSession implements SSHSession {
 
-	private final JSch jsch = new JSch();
 	protected Session session = null;
 	protected Session sessionTunnel = null;
 	protected Channel channel = null;
@@ -96,6 +95,7 @@ abstract class SSHAbstractSession implements SSHSession {
 	}
 
 	private Session _connect(String host, int port, String id, String pwd) throws JSchException {
+		JSch jsch = new JSch();
 		File privateKeyFile = new File(System.getProperty("user.home") + "/" + ".ssh" + "/" + "id_rsa");
 		if(privateKeyFile.exists()) {
 			jsch.addIdentity(privateKeyFile.getAbsolutePath());

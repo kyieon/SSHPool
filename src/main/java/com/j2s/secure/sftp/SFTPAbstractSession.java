@@ -12,6 +12,7 @@ abstract class SFTPAbstractSession implements SFTPSession {
 
 	protected Session session = null;
 	protected ChannelSftp channelSftp = null;
+	protected String name;
 	protected String sessionKey;
 
 	public SFTPAbstractSession(String sessionKey) {
@@ -54,7 +55,7 @@ abstract class SFTPAbstractSession implements SFTPSession {
 		session.setTimeout(10 * 1000);
 		session.setPassword(pwd);
 		session.setConfig(getConfig());
-		session.connect();
+		session.connect(10 * 1000);
 		return session;
 	}
 

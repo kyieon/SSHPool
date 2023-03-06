@@ -1,25 +1,35 @@
 package com.j2s.secure.ssh;
 
-import com.j2s.secure.SSHSessionConfig;
+import com.j2s.secure.SSHSessionKeyedConfig;
 import com.j2s.secure.ssh.ex.SSHSessionException;
+import com.j2s.secure.ssh.ex.SSHSessionNotConnectionException;
+import com.j2s.secure.ssh.ex.SSHSessionNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.pool2.BaseKeyedPooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j(topic = "ssh")
 public class SSHSyncKeyedPoolableObjectFactory extends BaseKeyedPooledObjectFactory<String, SSHSyncSession> {
 
-    private SSHSessionConfig sshSessionConfig;
+    private SSHSessionKeyedConfig sshSessionConfig;
 
-    public SSHSyncKeyedPoolableObjectFactory(SSHSessionConfig sshSessionConfig) {
+    public SSHSyncKeyedPoolableObjectFactory(SSHSessionKeyedConfig sshSessionConfig) {
         this.sshSessionConfig = sshSessionConfig;
     }
 
     @Override
     public SSHSyncSession create(String host) throws Exception {
+        List<String> hosts = sshSessionConfig.getHosts();
+        if(null == hosts || hosts.isEmpty()) {
+            throw new SSHSessionNotConnectionException("hosts is null or empty.");
+        }
+        if(!hosts.contains(host)) {
+            throw new SSHSessionNotFoundException(String.format("'%s' session is not found.", host));
+        }
         String sessionKey = UUID.randomUUID().toString();
         SSHSyncSession session = new SSHSyncSessionImpl(sessionKey);
         session.connect(host, sshSessionConfig.getPort(), sshSessionConfig.getId(), sshSessionConfig.getPwd());

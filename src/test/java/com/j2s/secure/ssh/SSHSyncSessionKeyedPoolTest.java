@@ -1,13 +1,12 @@
 package com.j2s.secure.ssh;
 
-import com.j2s.secure.SSHSessionConfig;
+import com.j2s.secure.SSHSessionKeyedConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Arrays;
 
 class SSHSyncSessionKeyedPoolTest {
 
@@ -15,7 +14,8 @@ class SSHSyncSessionKeyedPoolTest {
 
     @BeforeEach
     void before() {
-        SSHSessionConfig config = new SSHSessionConfig();
+        SSHSessionKeyedConfig config = new SSHSessionKeyedConfig();
+        config.setHosts(Arrays.asList("10.180.92.250"));
         config.setPort(22);
         config.setId("ngepc");
         config.setPwd("ngepc./");

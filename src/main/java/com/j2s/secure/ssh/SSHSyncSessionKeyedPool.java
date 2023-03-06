@@ -2,6 +2,7 @@ package com.j2s.secure.ssh;
 
 
 import com.j2s.secure.SSHSessionConfig;
+import com.j2s.secure.SSHSessionKeyedConfig;
 import com.j2s.secure.SimpleThreadFactory;
 import com.j2s.secure.ssh.ex.SSHSessionNotFoundException;
 import com.j2s.secure.ssh.ex.SSHSessionNotValidException;
@@ -21,11 +22,11 @@ public class SSHSyncSessionKeyedPool extends GenericKeyedObjectPool<String, SSHS
 
     private final ScheduledExecutorService ses = Executors.newScheduledThreadPool(1, new SimpleThreadFactory(("SSHSyncSessionKeyedPool")));
 
-    public SSHSyncSessionKeyedPool(SSHSessionConfig sshSessionConfig) {
+    public SSHSyncSessionKeyedPool(SSHSessionKeyedConfig sshSessionConfig) {
         this(sshSessionConfig, getDefaultPoolConfig());
     }
 
-    public SSHSyncSessionKeyedPool(SSHSessionConfig sshSessionConfig, GenericKeyedObjectPoolConfig<SSHSyncSession> poolConfig) {
+    public SSHSyncSessionKeyedPool(SSHSessionKeyedConfig sshSessionConfig, GenericKeyedObjectPoolConfig<SSHSyncSession> poolConfig) {
         this(new SSHSyncKeyedPoolableObjectFactory(sshSessionConfig), poolConfig);
     }
 
