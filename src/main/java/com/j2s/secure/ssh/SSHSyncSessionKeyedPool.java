@@ -1,7 +1,6 @@
 package com.j2s.secure.ssh;
 
 
-import com.j2s.secure.SSHSessionConfig;
 import com.j2s.secure.SSHSessionKeyedConfig;
 import com.j2s.secure.SimpleThreadFactory;
 import com.j2s.secure.ssh.ex.SSHSessionNotFoundException;
@@ -46,8 +45,9 @@ public class SSHSyncSessionKeyedPool extends GenericKeyedObjectPool<String, SSHS
         config.setMaxTotalPerKey(2);
         config.setMaxWait(Duration.ofMillis(30 * 1000L));                            // session wait (borrow timeout)
         config.setTestOnBorrow(true);                                                // brow validation
-        config.setTimeBetweenEvictionRuns(Duration.ofMillis(30 * 60 * 1000L));        // check interval time (evictor)
-        config.setMinEvictableIdleTime(Duration.ofMillis(60 * 60 * 1000L));        // check idle time
+        config.setTestWhileIdle(true);                                               // idle validation
+        config.setTimeBetweenEvictionRuns(Duration.ofMillis(30 * 60 * 1000L));       // check interval time (evictor)
+        config.setMinEvictableIdleTime(Duration.ofMillis(60 * 60 * 1000L));          // check idle time
         config.setNumTestsPerEvictionRun(1);
         config.setLifo(false);
 
@@ -114,7 +114,8 @@ public class SSHSyncSessionKeyedPool extends GenericKeyedObjectPool<String, SSHS
         sb.append("\n").append("==========================================================");
         sb.append("\n").append("Total: ").append(this.getMaxTotal());
         sb.append("\n").append("Active: ").append(this.getNumActive());
-        sb.append("\n").append("Idle Objects: ").append(this.getNumIdle());
+        sb.append("\n").append("Idle: ").append(this.getNumIdle());
+        sb.append("\n").append("Objects: ");
         Map<String, List<DefaultPooledObjectInfo>> objects = this.listAllObjects();
         for (String key : objects.keySet()) {
             for (DefaultPooledObjectInfo p : objects.get(key)) {

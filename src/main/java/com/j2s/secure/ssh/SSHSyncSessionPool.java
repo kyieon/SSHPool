@@ -44,8 +44,9 @@ public class SSHSyncSessionPool extends GenericObjectPool<SSHSyncSession> {
         config.setMaxTotal(4);
         config.setMaxWait(Duration.ofMillis(30 * 1000L));                        // session wait (borrow timeout)
         config.setTestOnBorrow(true);                                            // brow validation
-        config.setTimeBetweenEvictionRuns(Duration.ofMillis(30 * 60 * 1000L));    // check interval time (evictor)
-        config.setMinEvictableIdleTime(Duration.ofMillis(60 * 60 * 1000L));    // check idle time
+        config.setTestWhileIdle(true);                                           // idle validation
+        config.setTimeBetweenEvictionRuns(Duration.ofMillis(30 * 60 * 1000L));   // check interval time (evictor)
+        config.setMinEvictableIdleTime(Duration.ofMillis(60 * 60 * 1000L));      // check idle time
         config.setNumTestsPerEvictionRun(2);
         config.setLifo(false);
 
@@ -138,7 +139,8 @@ public class SSHSyncSessionPool extends GenericObjectPool<SSHSyncSession> {
         sb.append("\n").append("==========================================================");
         sb.append("\n").append("Total: ").append(this.getMaxTotal());
         sb.append("\n").append("Active: ").append(this.getNumActive());
-        sb.append("\n").append("Idle Objects: ").append(this.getNumIdle());
+        sb.append("\n").append("Idle: ").append(this.getNumIdle());
+        sb.append("\n").append("Objects: ");
         Set<DefaultPooledObjectInfo> objects = this.listAllObjects();
         for (DefaultPooledObjectInfo p : objects) {
             sb.append("\n\t").append("\t").append(p.getPooledObjectToString()).append("\t").append(p.getLastBorrowTimeFormatted());
