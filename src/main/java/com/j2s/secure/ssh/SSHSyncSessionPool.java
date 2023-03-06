@@ -3,18 +3,16 @@ package com.j2s.secure.ssh;
 
 import com.j2s.secure.SSHSessionConfig;
 import com.j2s.secure.SimpleThreadFactory;
-import com.j2s.secure.ssh.ex.SSHSessionException;
-import com.j2s.secure.ssh.ex.SSHSessionNotConnectionException;
 import com.j2s.secure.ssh.ex.SSHSessionNotFoundException;
 import com.j2s.secure.ssh.ex.SSHSessionNotValidException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.pool2.impl.DefaultPooledObjectInfo;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +36,7 @@ public class SSHSyncSessionPool extends GenericObjectPool<SSHSyncSession> {
         ses.scheduleAtFixedRate(() -> {
             StringBuilder sb = new StringBuilder();
             sb.append("\n==========================================================\n");
-            sb.append(printField());
+            sb.append(toDebugString());
             sb.append("\n==========================================================\n");
             log.info(sb.toString());
         }, 10, 60, TimeUnit.SECONDS);
@@ -141,9 +139,17 @@ public class SSHSyncSessionPool extends GenericObjectPool<SSHSyncSession> {
         invalidateObject(session);
     }
 
-    private String printField() {
+    private String toDebugString() {
         StringBuilder sb = new StringBuilder();
-        toStringAppendFields(sb);
+        sb.append("\n").append("==========================================================");
+        sb.append("\n").append("Active: ").append(this.getNumActive());
+        sb.append("\n").append("Idle: ").append(this.getMaxTotal());
+        sb.append("\n").append("Idle Objects: ");
+        Set<DefaultPooledObjectInfo> objects = this.listAllObjects();
+        for (DefaultPooledObjectInfo p : objects) {
+            sb.append("\n\t").append("\t").append(p.getPooledObjectToString()).append("\t").append(p.getLastBorrowTimeFormatted());
+        }
+        sb.append("\n").append("==========================================================");
         return sb.toString();
     }
 

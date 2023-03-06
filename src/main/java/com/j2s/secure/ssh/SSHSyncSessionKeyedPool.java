@@ -7,10 +7,13 @@ import com.j2s.secure.SimpleThreadFactory;
 import com.j2s.secure.ssh.ex.SSHSessionNotFoundException;
 import com.j2s.secure.ssh.ex.SSHSessionNotValidException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.pool2.impl.DefaultPooledObjectInfo;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,7 +38,7 @@ public class SSHSyncSessionKeyedPool extends GenericKeyedObjectPool<String, SSHS
         ses.scheduleAtFixedRate(() -> {
             StringBuilder sb = new StringBuilder();
             sb.append("\n==========================================================\n");
-            sb.append(printField());
+            sb.append(toDebugString());
             sb.append("\n==========================================================\n");
             log.info(sb.toString());
         }, 10, 60, TimeUnit.SECONDS);
@@ -112,9 +115,19 @@ public class SSHSyncSessionKeyedPool extends GenericKeyedObjectPool<String, SSHS
         invalidateObject(host, session);
     }
 
-    private String printField() {
+    private String toDebugString() {
         StringBuilder sb = new StringBuilder();
-        toStringAppendFields(sb);
+        sb.append("\n").append("==========================================================");
+        sb.append("\n").append("Active: ").append(this.getNumActive());
+        sb.append("\n").append("Idle: ").append(this.getMaxTotal());
+        sb.append("\n").append("Idle Objects: ");
+        Map<String, List<DefaultPooledObjectInfo>> objects = this.listAllObjects();
+        for (String key : objects.keySet()) {
+            for (DefaultPooledObjectInfo p : objects.get(key)) {
+                sb.append("\n\t").append(key).append("\t").append(p.getPooledObjectToString()).append("\t").append(p.getLastBorrowTimeFormatted());
+            }
+        }
+        sb.append("\n").append("==========================================================");
         return sb.toString();
     }
 
