@@ -33,13 +33,7 @@ public class SSHSyncSessionPool extends GenericObjectPool<SSHSyncSession> {
 
     public SSHSyncSessionPool(SSHSyncPoolableObjectFactory sessionPoolFactory, GenericObjectPoolConfig<SSHSyncSession> poolConfig) {
         super(sessionPoolFactory, poolConfig);
-        ses.scheduleAtFixedRate(() -> {
-            StringBuilder sb = new StringBuilder();
-            sb.append("\n==========================================================\n");
-            sb.append(toDebugString());
-            sb.append("\n==========================================================\n");
-            log.info(sb.toString());
-        }, 10, 60, TimeUnit.SECONDS);
+        ses.scheduleAtFixedRate(() -> log.info(toDebugString()), 10, 60, TimeUnit.SECONDS);
     }
 
     static GenericObjectPoolConfig<SSHSyncSession> getDefaultPoolConfig() {
@@ -142,9 +136,9 @@ public class SSHSyncSessionPool extends GenericObjectPool<SSHSyncSession> {
     private String toDebugString() {
         StringBuilder sb = new StringBuilder();
         sb.append("\n").append("==========================================================");
+        sb.append("\n").append("Total: ").append(this.getMaxTotal());
         sb.append("\n").append("Active: ").append(this.getNumActive());
-        sb.append("\n").append("Idle: ").append(this.getMaxTotal());
-        sb.append("\n").append("Idle Objects: ");
+        sb.append("\n").append("Idle Objects: ").append(this.getNumIdle());
         Set<DefaultPooledObjectInfo> objects = this.listAllObjects();
         for (DefaultPooledObjectInfo p : objects) {
             sb.append("\n\t").append("\t").append(p.getPooledObjectToString()).append("\t").append(p.getLastBorrowTimeFormatted());

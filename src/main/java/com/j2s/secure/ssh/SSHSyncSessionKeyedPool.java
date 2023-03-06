@@ -35,13 +35,7 @@ public class SSHSyncSessionKeyedPool extends GenericKeyedObjectPool<String, SSHS
 
     public SSHSyncSessionKeyedPool(SSHSyncKeyedPoolableObjectFactory sessionKeyedPoolFactory, GenericKeyedObjectPoolConfig<SSHSyncSession> poolConfig) {
         super(sessionKeyedPoolFactory, poolConfig);
-        ses.scheduleAtFixedRate(() -> {
-            StringBuilder sb = new StringBuilder();
-            sb.append("\n==========================================================\n");
-            sb.append(toDebugString());
-            sb.append("\n==========================================================\n");
-            log.info(sb.toString());
-        }, 10, 60, TimeUnit.SECONDS);
+        ses.scheduleAtFixedRate(() -> log.info(toDebugString()), 10, 60, TimeUnit.SECONDS);
     }
 
     static GenericKeyedObjectPoolConfig<SSHSyncSession> getDefaultPoolConfig() {
@@ -118,9 +112,9 @@ public class SSHSyncSessionKeyedPool extends GenericKeyedObjectPool<String, SSHS
     private String toDebugString() {
         StringBuilder sb = new StringBuilder();
         sb.append("\n").append("==========================================================");
+        sb.append("\n").append("Total: ").append(this.getMaxTotal());
         sb.append("\n").append("Active: ").append(this.getNumActive());
-        sb.append("\n").append("Idle: ").append(this.getMaxTotal());
-        sb.append("\n").append("Idle Objects: ");
+        sb.append("\n").append("Idle Objects: ").append(this.getNumIdle());
         Map<String, List<DefaultPooledObjectInfo>> objects = this.listAllObjects();
         for (String key : objects.keySet()) {
             for (DefaultPooledObjectInfo p : objects.get(key)) {
