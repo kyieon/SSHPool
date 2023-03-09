@@ -47,8 +47,8 @@ public class SSHSyncSessionKeyedPool extends GenericKeyedObjectPool<String, SSHS
         config.setTestOnBorrow(true);                                                // brow validation
         config.setTestWhileIdle(true);                                               // idle validation
         config.setTimeBetweenEvictionRuns(Duration.ofMillis(30 * 60 * 1000L));       // check interval time (evictor)
-        config.setMinEvictableIdleTime(Duration.ofMillis(60 * 60 * 1000L));          // check idle time
-        config.setNumTestsPerEvictionRun(1);
+        config.setMinEvictableIdleTime(Duration.ofMillis(-1L));                      // check idle time
+        config.setNumTestsPerEvictionRun(2);
         config.setLifo(false);
 
         return config;
@@ -112,14 +112,14 @@ public class SSHSyncSessionKeyedPool extends GenericKeyedObjectPool<String, SSHS
     private String toDebugString() {
         StringBuilder sb = new StringBuilder();
         sb.append("\n").append("==========================================================");
-        sb.append("\n").append("Total: ").append(this.getMaxTotal());
+        sb.append("\n").append("TotalPerKey: ").append(this.getMaxTotalPerKey());
         sb.append("\n").append("Active: ").append(this.getNumActive());
         sb.append("\n").append("Idle: ").append(this.getNumIdle());
         sb.append("\n").append("Objects: ");
         Map<String, List<DefaultPooledObjectInfo>> objects = this.listAllObjects();
         for (String key : objects.keySet()) {
             for (DefaultPooledObjectInfo p : objects.get(key)) {
-                sb.append("\n\t").append(key).append("\t").append(p.getPooledObjectToString()).append("\t").append(p.getLastBorrowTimeFormatted());
+                sb.append("\n\t").append(key).append("\t").append(p.getPooledObjectToString()).append("\t").append(p.getLastBorrowTimeFormatted()).append("("+p.getBorrowedCount()+")");
             }
         }
         sb.append("\n").append("==========================================================");

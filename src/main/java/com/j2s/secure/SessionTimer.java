@@ -9,21 +9,26 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-class SSHSessionTimer {
+public class SessionTimer {
 
 	private static ScheduledExecutorService ses = null;
 	private static AtomicInteger usageCount = new AtomicInteger(0);
 
-	static synchronized void schedule(TimerTask task, long delay, long period) throws Exception {
+	public static synchronized void schedule(TimerTask task, long delay, long period) {
 		if(null == ses) {
-			ses = Executors.newScheduledThreadPool(1, new SimpleThreadFactory("SSHSessionMonitor"));
+			ses = Executors.newScheduledThreadPool(2, new SimpleThreadFactory("SSHSessionMonitor"));
 		}
-		int count = usageCount.incrementAndGet();
-		log.info("{} Start - {}", task.toString(), count);
-		ses.scheduleAtFixedRate(task, delay, period, TimeUnit.SECONDS);
+		try {
+			int count = usageCount.incrementAndGet();
+			log.info("{} Start - {}", task.toString(), count);
+			ses.scheduleAtFixedRate(task, delay, period, TimeUnit.SECONDS);
+		} catch (Exception e) {
+			log.error("", e);
+			cancel(task);
+		}
 	}
 
-	static synchronized void cancel(TimerTask task) {
+	private static synchronized void cancel(TimerTask task) {
 		task.cancel();
 		int count = usageCount.decrementAndGet();
 		if (count == 0) {

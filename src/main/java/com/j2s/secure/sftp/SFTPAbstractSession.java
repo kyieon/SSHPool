@@ -1,6 +1,7 @@
 package com.j2s.secure.sftp;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Properties;
 
 import com.jcraft.jsch.*;
@@ -14,6 +15,7 @@ abstract class SFTPAbstractSession implements SFTPSession {
 	protected ChannelSftp channelSftp = null;
 	protected String name;
 	protected String sessionKey;
+	protected LocalDateTime createTime = LocalDateTime.now();
 
 	public SFTPAbstractSession(String sessionKey) {
 		this.sessionKey = sessionKey;
@@ -23,7 +25,12 @@ abstract class SFTPAbstractSession implements SFTPSession {
 	public String getSessionKey() {
 		return sessionKey;
 	}
-	
+
+	@Override
+	public LocalDateTime getCreateDate() {
+		return createTime;
+	}
+
 	@Override
 	public void connect(String host, int port, String id, String pwd) throws JSchException, IOException {
 		try {

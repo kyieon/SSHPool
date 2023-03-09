@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -32,6 +33,10 @@ public interface SFTPSession extends Closeable {
      */
     String getSessionKey();
 
+    /**
+     * @return create session time
+     */
+    LocalDateTime getCreateDate();
 
     /** Method **/
     void cd(String path) throws SftpException;

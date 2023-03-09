@@ -1,5 +1,6 @@
 package com.j2s.secure.sftp;
 
+import com.j2s.secure.SessionTimer;
 import com.j2s.secure.sftp.ex.SFTPSessionAlreadyExistException;
 import com.j2s.secure.sftp.ex.SFTPSessionNotConnectionException;
 import com.j2s.secure.sftp.ex.SFTPSessionNotFoundException;
@@ -8,12 +9,38 @@ import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j(topic = "sftp")
 enum SFTPSessionManager {
 	INSTANCE;
+
+	SFTPSessionManager() {
+		SessionTimer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				StringBuilder sb = new StringBuilder();
+				sb.append("\n==========================================================\n");
+
+				Map<String, SFTPSession> sessionMap = SFTPSessionManager.INSTANCE.getSessionMap();
+
+				sb.append(String.format("SFTP SESSION COUNT [%d] \n", sessionMap.size()));
+
+				sb.append("\nSFTP SESSION DETAIL\n");
+
+				for (Map.Entry<String, SFTPSession> e : sessionMap.entrySet()) {
+					SFTPSession session = e.getValue();
+					sb.append(String.format("\tSESSION KEY = [%s][%s][CREATE:%s]]", session.getSessionKey(), session.isConnected(), session.getCreateDate()));
+				}
+				sb.append("\n==========================================================\n");
+
+				log.info(sb.toString());
+			}
+		}, 10, 60);
+	}
 
 	private static final Map<String, SFTPSession> sessionMap = ExpiringMap.builder()
 			.expirationPolicy(ExpirationPolicy.ACCESSED)
@@ -57,6 +84,10 @@ enum SFTPSessionManager {
 			return null;
 		
 		return sessionMap.remove(sessionKey);
+	}
+
+	public Map<String, SFTPSession> getSessionMap() {
+		return Collections.unmodifiableMap(sessionMap);
 	}
 
 	void close(String sessionKey) {
