@@ -30,12 +30,12 @@ class SFTPSessionImpl extends SFTPAbstractSession implements SFTPSession {
 
 	@Override
 	public void cd(String path) throws SftpException {
-		channelSftp.cd(path);
+		channel.cd(path);
 	}
 
 	@Override
 	public String pwd() throws SftpException {
-		return channelSftp.pwd();
+		return channel.pwd();
 	}
 
 	@Override
@@ -45,7 +45,7 @@ class SFTPSessionImpl extends SFTPAbstractSession implements SFTPSession {
 
 	@Override
 	public List<ChannelSftp.LsEntry> ls(String path) throws SftpException {
-		Vector<ChannelSftp.LsEntry> ls = channelSftp.ls(path);
+		Vector<ChannelSftp.LsEntry> ls = channel.ls(path);
 		return new ArrayList<>(ls);
 	}
 
@@ -55,7 +55,7 @@ class SFTPSessionImpl extends SFTPAbstractSession implements SFTPSession {
 	}
 
 	private InputStream _get(String name) throws SftpException {
-		return channelSftp.get(name);
+		return channel.get(name);
 	}
 
 	@Override
@@ -72,16 +72,16 @@ class SFTPSessionImpl extends SFTPAbstractSession implements SFTPSession {
 
 	@Override
 	public void rm(String name) throws SftpException {
-		SftpATTRS stat = channelSftp.stat(name);
+		SftpATTRS stat = channel.stat(name);
 		_rm(stat, name);
 	}
 
 	private void _rm(SftpATTRS stat, String fPath) throws SftpException {
 		if(stat.isDir()) {
 			_rmRecv(fPath);
-			channelSftp.rmdir(fPath);
+			channel.rmdir(fPath);
 		} else {
-			channelSftp.rm(fPath);
+			channel.rm(fPath);
 		}
 	}
 
@@ -105,7 +105,7 @@ class SFTPSessionImpl extends SFTPAbstractSession implements SFTPSession {
 
 	@Override
 	public void put(File file, String name) throws SftpException {
-		channelSftp.put(file.getAbsolutePath(), name);
+		channel.put(file.getAbsolutePath(), name);
 	}
 
 	@Override
@@ -117,6 +117,6 @@ class SFTPSessionImpl extends SFTPAbstractSession implements SFTPSession {
 
 	@Override
 	public void rename(String srcName, String dstName) throws SftpException {
-		channelSftp.rename(srcName, dstName);
+		channel.rename(srcName, dstName);
 	}
 }

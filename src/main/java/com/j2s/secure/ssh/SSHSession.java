@@ -21,10 +21,10 @@ public interface SSHSession extends Closeable {
 	/**
 	 * ssh connect - Local Port Forwarding
 	 * 
-	 * @param tHost - Ternel Server host
-	 * @param tPort - Ternel Server port
-	 * @param tId   - Ternel Server Id
-	 * @param tPwd  - Ternel server Pwd
+	 * @param tHost - Turnel Server host
+	 * @param tPort - Turnel Server port
+	 * @param tId   - Turnel Server Id
+	 * @param tPwd  - Turnel server Pwd
 	 * @param host  - Server host
 	 * @param port  - Server Port
 	 * @param id	- Server Id

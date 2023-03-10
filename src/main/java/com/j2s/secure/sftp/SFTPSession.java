@@ -24,6 +24,20 @@ public interface SFTPSession extends Closeable {
     void connect(String host, int port, String id, String pwd) throws JSchException, IOException;
 
     /**
+     * sftp connect - Local Port Forwarding
+     *
+     * @param tHost - Turnel Server host
+     * @param tPort - Turnel Server port
+     * @param tId   - Turnel Server Id
+     * @param tPwd  - Turnel server Pwd
+     * @param host  - Server host
+     * @param port  - Server Port
+     * @param id	- Server Id
+     * @param pwd	- Server Pwd
+     */
+    void connectTunnel(String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws JSchException, IOException;
+
+    /**
      * @return Boolean (true: connect, false: not connect)
      */
     boolean isConnected();
@@ -61,4 +75,5 @@ public interface SFTPSession extends Closeable {
     void rm(String name) throws SftpException;
 
     void rename(String srcName, String dstName) throws SftpException;
+
 }

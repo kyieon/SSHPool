@@ -12,7 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 abstract class SFTPAbstractSession implements SFTPSession {
 
 	protected Session session = null;
-	protected ChannelSftp channelSftp = null;
+	protected Session sessionTunnel = null;
+	protected ChannelSftp channel = null;
 	protected String name;
 	protected String sessionKey;
 	protected LocalDateTime createTime = LocalDateTime.now();
@@ -42,10 +43,25 @@ abstract class SFTPAbstractSession implements SFTPSession {
 			throw e;
 		}
 	}
-	
+
+	@Override
+	public void connectTunnel(String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws JSchException, IOException {
+		try {
+			sessionTunnel = _connect(tHost, tPort, tId, tPwd);
+			int lPort = sessionTunnel.setPortForwardingL(0, host, port);
+			log.info("[" + getSessionKey() + "]" + " local port forwarding : " + lPort);
+			session = _connect("127.0.0.1", lPort, id, pwd);
+			openChannel(session);
+			log.info("[" + getSessionKey() + "]" + " tunnel session open.");
+		} catch (Exception e) {
+			_close();
+			throw e;
+		}
+	}
+
 	private void openChannel(Session session) throws JSchException, IOException {
 		Channel channel = session.openChannel("sftp");
-		channelSftp = (ChannelSftp) channel;
+		this.channel = (ChannelSftp) channel;
 		channel.connect();
 	}
 	
@@ -82,8 +98,8 @@ abstract class SFTPAbstractSession implements SFTPSession {
 	}
 
 	private void _close() throws IOException {
-		if (null != channelSftp) {
-			channelSftp.quit();
+		if (null != channel) {
+			channel.quit();
 		}
 		if (null != session) {
 			session.disconnect();
