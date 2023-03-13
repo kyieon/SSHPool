@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 
 @Slf4j(topic = "sftp")
-class SFTPSessionImpl extends SFTPAbstractSession implements SFTPSession {
+class SFTPSessionImpl extends SFTPAbstractSession {
 
 	public SFTPSessionImpl(String sessionKey) {
 		super(sessionKey);
