@@ -33,16 +33,16 @@ public class SSHSessionFactory {
 	
 	/**
 	 * @param sessionKey	- Session Key
-	 * @param tHost			- Turnel Server host
-	 * @param tPort			- Turnel Server port
-	 * @param tId			- Turnel Server Id
-	 * @param tPwd			- Turnel server Pwd
+	 * @param tHost			- Tunnel Server host
+	 * @param tPort			- Tunnel Server port
+	 * @param tId			- Tunnel Server Id
+	 * @param tPwd			- Tunnel server Pwd
 	 * @param host			- Server host
 	 * @param port			- Server Port
 	 * @param id			- Server Id
 	 * @param pwd			- Server Pwd
 	 */
-	public static SSHSyncSession openSyncSessionTurnel(String sessionKey, String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws JSchException, IOException {
+	public static SSHSyncSession openSyncSessionTunnel(String sessionKey, String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws JSchException, IOException {
 		SSHSyncSession sshSession = new SSHSyncSessionImpl(sessionKey);
 		sshSession.connectTunnel(tHost, tPort, tId, tPwd, host, port, id, pwd);
 		SSHSessionManager.INSTANCE.putSession(sessionKey, sshSession);
@@ -62,16 +62,16 @@ public class SSHSessionFactory {
 	
 	/**
 	 * @param sessionKey	- Session Key
-	 * @param tHost			- Turnel Server host
-	 * @param tPort			- Turnel Server port
-	 * @param tId			- Turnel Server Id
-	 * @param tPwd			- Turnel server Pwd
+	 * @param tHost			- Tunnel Server host
+	 * @param tPort			- Tunnel Server port
+	 * @param tId			- Tunnel Server Id
+	 * @param tPwd			- Tunnel server Pwd
 	 * @param host			- Server host
 	 * @param port			- Server Port
 	 * @param id			- Server Id
 	 * @param pwd			- Server Pwd
 	 */
-	public static SSHAsyncSession openAsyncSessionTurnel(String sessionKey, String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws JSchException, IOException {
+	public static SSHAsyncSession openAsyncSessionTunnel(String sessionKey, String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws JSchException, IOException {
 		SSHAsyncSession sshSession = new SSHAsyncSessionImpl(sessionKey);
 		sshSession.connectTunnel(tHost, tPort, tId, tPwd, host, port, id, pwd);
 		SSHSessionManager.INSTANCE.putSession(sessionKey, sshSession);

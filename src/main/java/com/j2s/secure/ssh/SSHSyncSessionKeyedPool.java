@@ -2,7 +2,7 @@ package com.j2s.secure.ssh;
 
 
 import com.j2s.secure.SSHSessionKeyedConfig;
-import com.j2s.secure.SimpleThreadFactory;
+import com.j2s.secure.executors.SecureExecutors;
 import com.j2s.secure.ssh.ex.SSHSessionNotFoundException;
 import com.j2s.secure.ssh.ex.SSHSessionNotValidException;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -22,7 +21,7 @@ import java.util.function.Function;
 @Slf4j(topic = "ssh")
 public class SSHSyncSessionKeyedPool extends GenericKeyedObjectPool<String, SSHSyncSession> {
 
-    private final ScheduledExecutorService ses = Executors.newScheduledThreadPool(1, new SimpleThreadFactory(("SSHSyncSessionKeyedPool")));
+    private final ScheduledExecutorService ses = SecureExecutors.newScheduledThreadPool(1, "SSHSyncSessionKeyedPool");
 
     public SSHSyncSessionKeyedPool(SSHSessionKeyedConfig sshSessionConfig) {
         this(sshSessionConfig, getDefaultPoolConfig());

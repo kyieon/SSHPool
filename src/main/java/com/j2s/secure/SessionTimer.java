@@ -1,9 +1,9 @@
 package com.j2s.secure;
 
+import com.j2s.secure.executors.SecureExecutors;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,7 +16,7 @@ public class SessionTimer {
 
 	public static synchronized void schedule(TimerTask task, long delay, long period) {
 		if(null == ses) {
-			ses = Executors.newScheduledThreadPool(2, new SimpleThreadFactory("SSHSessionMonitor"));
+			ses = SecureExecutors.newScheduledThreadPool(2, "SSHSessionMonitor");
 		}
 		try {
 			int count = usageCount.incrementAndGet();

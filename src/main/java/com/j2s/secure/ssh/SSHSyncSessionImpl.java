@@ -1,6 +1,6 @@
 package com.j2s.secure.ssh;
 
-import com.j2s.secure.SimpleThreadFactory;
+import com.j2s.secure.executors.SecureExecutors;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -14,7 +14,7 @@ class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 
 	private final int DEFAULT_TIMEOUT = 60;
 
-	private ExecutorService readES = Executors.newFixedThreadPool(1, new SimpleThreadFactory("SSHSyncSessionReader"));
+	private ExecutorService readES = SecureExecutors.newFixedThreadPool(1, "SSHSyncSessionReader");
 
 	private AtomicLong errorCount = new AtomicLong();
 
@@ -52,13 +52,13 @@ class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 	public String write(String command, String prompt, int timeOut) throws IOException {
 		l.lock();
 		try {
-			log.debug("[" + getSessionKey() + "][" + toString() + "] WRITE START :: COMMAND :: " + command);
+			log.debug("[" + getSessionKey() + "] WRITE START :: COMMAND :: " + command);
 			_write(command);
 			Future<String> f = readES.submit(() -> read(prompt));
 			try {
 				String result = f.get(timeOut, TimeUnit.SECONDS);
-				log.trace("[" + getSessionKey() + "][" + toString() + "] COMMAND :: {} :: RESULT :: {}", command, result);
-				log.debug("[" + getSessionKey() + "][" + toString() + "] WRITE END   :: COMMAND :: {}", command);
+				log.trace("[" + getSessionKey() + "] COMMAND :: {} :: RESULT :: {}", command, result);
+				log.debug("[" + getSessionKey() + "] WRITE END   :: COMMAND :: {}", command);
 				return result;
 			} catch (TimeoutException | InterruptedException | ExecutionException e) {
 				_write(CTRL_C);
@@ -114,6 +114,7 @@ class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 		boolean stop = false;
 		byte[] b = new byte[1024 * 4];
 		try {
+			log.info("[" + getSessionKey() + "] Read :: Session :: {}", session);
 			while (true) {
 				while (is.available() > 0) {
 					int i = is.read(b);

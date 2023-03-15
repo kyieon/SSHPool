@@ -1,20 +1,23 @@
 package com.j2s.secure.ssh;
 
 import com.j2s.secure.SSHAsyncMessage;
-import com.j2s.secure.SimpleThreadFactory;
+import com.j2s.secure.executors.SecureExecutors;
 import com.j2s.secure.ssh.ex.SSHTriggerAlreadyExistException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 @Slf4j(topic = "ssh")
 class SSHAsyncSessionImpl extends SSHAbstractSession implements SSHAsyncSession {
 
-	private ExecutorService readES = Executors.newFixedThreadPool(1, new SimpleThreadFactory("SSHAsyncSessionReader"));
-	private ExecutorService sendES = Executors.newFixedThreadPool(1, new SimpleThreadFactory("SSHAsyncSessionSender"));
+	private ExecutorService readES = SecureExecutors.newFixedThreadPool(1, "SSHAsyncSessionReader");
+	private ExecutorService sendES = SecureExecutors.newFixedThreadPool(1, "SSHAsyncSessionSender");
 	private BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
 
 	public SSHAsyncSessionImpl(String sessionKey) {

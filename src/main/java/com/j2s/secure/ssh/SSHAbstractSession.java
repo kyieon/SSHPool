@@ -150,6 +150,4 @@ abstract class SSHAbstractSession implements SSHSession {
 			session.disconnect();
 		}
 	}
-
-
 }

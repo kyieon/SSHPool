@@ -38,8 +38,8 @@ class SFTPSessionFactoryTest {
     }
 
     @Test
-    void openSessionTurnel() {
-        try (SFTPSession sftpSession = SFTPSessionFactory.openSessionTurnel(sessionKey, host, 22, id, pwd, "10.180.93.60", 22, "root", "root123");) {
+    void openSessionTunnel() {
+        try (SFTPSession sftpSession = SFTPSessionFactory.openSessionTunnel(sessionKey, host, 22, id, pwd, "10.180.93.60", 22, "root", "root123");) {
             List<ChannelSftp.LsEntry> result = sftpSession.ls();
             System.out.println(result);
             try (InputStream inputStream = sftpSession.get("/etc/hosts")) {

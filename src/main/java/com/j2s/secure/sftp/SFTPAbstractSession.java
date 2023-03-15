@@ -1,5 +1,6 @@
 package com.j2s.secure.sftp;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Properties;
@@ -74,6 +75,10 @@ abstract class SFTPAbstractSession implements SFTPSession {
 	
 	private Session _connect(String host, int port, String id, String pwd) throws JSchException {
 		JSch jsch = new JSch();
+		File privateKeyFile = new File(System.getProperty("user.home") + "/" + ".ssh" + "/" + "id_rsa");
+		if(privateKeyFile.exists()) {
+			jsch.addIdentity(privateKeyFile.getAbsolutePath());
+		}
 		Session session = jsch.getSession(id, host, port);
 		session.setTimeout(10 * 1000);
 		session.setPassword(pwd);

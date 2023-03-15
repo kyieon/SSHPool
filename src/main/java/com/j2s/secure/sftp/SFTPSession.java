@@ -26,10 +26,10 @@ public interface SFTPSession extends Closeable {
     /**
      * sftp connect - Local Port Forwarding
      *
-     * @param tHost - Turnel Server host
-     * @param tPort - Turnel Server port
-     * @param tId   - Turnel Server Id
-     * @param tPwd  - Turnel server Pwd
+     * @param tHost - Tunnel Server host
+     * @param tPort - Tunnel Server port
+     * @param tId   - Tunnel Server Id
+     * @param tPwd  - Tunnel server Pwd
      * @param host  - Server host
      * @param port  - Server Port
      * @param id	- Server Id

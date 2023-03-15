@@ -16,90 +16,89 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j(topic = "sftp")
 enum SFTPSessionManager {
-	INSTANCE;
+    INSTANCE;
 
-	SFTPSessionManager() {
-		SessionTimer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				StringBuilder sb = new StringBuilder();
-				sb.append("\n==========================================================\n");
+    SFTPSessionManager() {
+        SessionTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                StringBuilder sb = new StringBuilder();
+                sb.append("\n==========================================================\n");
 
-				Map<String, SFTPSession> sessionMap = SFTPSessionManager.INSTANCE.getSessionMap();
+                Map<String, SFTPSession> sessionMap = SFTPSessionManager.INSTANCE.getSessionMap();
 
-				sb.append(String.format("SFTP SESSION COUNT [%d] \n", sessionMap.size()));
+                sb.append(String.format("SFTP SESSION COUNT [%d] \n", sessionMap.size()));
 
-				sb.append("\nSFTP SESSION DETAIL\n");
+                sb.append("\nSFTP SESSION DETAIL\n");
 
-				for (Map.Entry<String, SFTPSession> e : sessionMap.entrySet()) {
-					SFTPSession session = e.getValue();
-					sb.append(String.format("\tSESSION KEY = [%s][%s][CREATE:%s]]", session.getSessionKey(), session.isConnected(), session.getCreateDate()));
-				}
-				sb.append("\n==========================================================\n");
+                for (Map.Entry<String, SFTPSession> e : sessionMap.entrySet()) {
+                    SFTPSession session = e.getValue();
+                    sb.append(String.format("\tSESSION KEY = [%s][%s][CREATE:%s]]", session.getSessionKey(), session.isConnected(), session.getCreateDate()));
+                }
+                sb.append("\n==========================================================\n");
 
-				log.info(sb.toString());
-			}
-		}, 10, 60);
-	}
+                log.info(sb.toString());
+            }
+        }, 10, 60);
+    }
 
 	private static final Map<String, SFTPSession> sessionMap = ExpiringMap.builder()
 			.expirationPolicy(ExpirationPolicy.ACCESSED)
 			.variableExpiration()
 			.expiration(10, TimeUnit.MINUTES)
 			.asyncExpirationListener((k, v) -> { 
-				log.debug(k + " expire session."); 
+				log.info(k + " expire session.");
 				SFTPSessionManager.INSTANCE._close((SFTPSession) v);
 			})
 			.build();
 
-	public boolean isSession(String sessionKey) {
-		return sessionMap.containsKey(sessionKey);
-	}
+    public boolean isSession(String sessionKey) {
+        return sessionMap.containsKey(sessionKey);
+    }
 
-	void putSession(String sessionKey, SFTPSession sshSession) throws SFTPSessionAlreadyExistException {
-		if(isSession(sessionKey)) { 
-			throw new SFTPSessionAlreadyExistException("'" + sessionKey + "' session key is exist.");
-		}
-		sessionMap.put(sessionKey, sshSession);
-	}
+    void putSession(String sessionKey, SFTPSession sshSession) throws SFTPSessionAlreadyExistException {
+        if (isSession(sessionKey)) {
+            throw new SFTPSessionAlreadyExistException("'" + sessionKey + "' session key is exist.");
+        }
+        sessionMap.put(sessionKey, sshSession);
+    }
 
-	public SFTPSession getSession(String sessionKey) throws SFTPSessionNotFoundException, SFTPSessionNotConnectionException {
-		SFTPSession sftpSession = sessionMap.get(sessionKey);
-		if(null == sftpSession) {
-			throw new SFTPSessionNotFoundException("'" + sessionKey + "' session is not found.");
-		}
-		if(!sftpSession.isConnected()) {
-			close(sessionKey);
-			throw new SFTPSessionNotConnectionException("'" + sessionKey + "' session not connection.");
-		}
-		return sftpSession;
-	}
-	
-	void removeSession(String sessionKey) {
-		_removeSession(sessionKey);
-	}
+    public SFTPSession getSession(String sessionKey) throws SFTPSessionNotFoundException, SFTPSessionNotConnectionException {
+        SFTPSession sftpSession = sessionMap.get(sessionKey);
+        if (null == sftpSession) {
+            throw new SFTPSessionNotFoundException("'" + sessionKey + "' session is not found.");
+        }
+        if (!sftpSession.isConnected()) {
+            close(sessionKey);
+            throw new SFTPSessionNotConnectionException("'" + sessionKey + "' session not connection.");
+        }
+        return sftpSession;
+    }
 
-	private SFTPSession _removeSession(String sessionKey) {
-		if(!isSession(sessionKey))
-			return null;
-		
-		return sessionMap.remove(sessionKey);
-	}
+    void removeSession(String sessionKey) {
+        _removeSession(sessionKey);
+    }
 
-	public Map<String, SFTPSession> getSessionMap() {
-		return Collections.unmodifiableMap(sessionMap);
-	}
+    private SFTPSession _removeSession(String sessionKey) {
+        if (!isSession(sessionKey)) return null;
 
-	void close(String sessionKey) {
-		SFTPSession sftpSession = _removeSession(sessionKey);
-		_close(sftpSession);
-	}
+        return sessionMap.remove(sessionKey);
+    }
 
-	private void _close(SFTPSession sftpSession) {
-		try {
-			sftpSession.close();
-		} catch (IOException e) {
-			//nothing...
-		}
-	}
+    public Map<String, SFTPSession> getSessionMap() {
+        return Collections.unmodifiableMap(sessionMap);
+    }
+
+    void close(String sessionKey) {
+        SFTPSession sftpSession = _removeSession(sessionKey);
+        _close(sftpSession);
+    }
+
+    void _close(SFTPSession sftpSession) {
+        try {
+            if (null != sftpSession) sftpSession.close();
+        } catch (IOException e) {
+            //nothing...
+        }
+    }
 }
