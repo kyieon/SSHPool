@@ -16,17 +16,28 @@ class SSHSessionFactoryTest {
 
     @Test
     void openSyncSession() {
-        try (SSHSyncSession sshSyncSession = SSHSessionFactory.openSyncSession(sessionKey, host, 22, id, pwd);) {
-            String result = sshSyncSession.write("ll");
+        try (SSHSyncSession session = SSHSessionFactory.openSyncSession(sessionKey, host, 22, id, pwd);) {
+            String result = session.write("ll");
             System.out.println(result);
-        } catch (JSchException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+            Thread.sleep(20*1000L);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     @Test
     void openAsyncSession() {
+        try (SSHAsyncSession session = SSHSessionFactory.openAsyncSession(sessionKey, host, 22, id, pwd);) {
+            session.onTrigger(m -> {
+                System.out.println(m);
+            });
+            session.write("ll");
+            session.write("pwd");
+            Thread.sleep(10*1000L);
+            session.write("pwd");
+            Thread.sleep(3*1000L);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -16,7 +16,7 @@ public interface SSHSession extends Closeable {
 	 * @param id	- Server Id
 	 * @param pwd	- Server Pwd
 	 */
-	void connect(String host, int port, String id, String pwd) throws JSchException, IOException;
+	void connect(String host, int port, String id, String pwd) throws Exception;
 
 	/**
 	 * ssh connect - Local Port Forwarding
@@ -30,7 +30,7 @@ public interface SSHSession extends Closeable {
 	 * @param id	- Server Id
 	 * @param pwd	- Server Pwd
 	 */
-	void connectTunnel(String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws JSchException, IOException;
+	void connectTunnel(String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws Exception;
 
 	/**
 	 * @return Boolean (true: connect, false: not connect)

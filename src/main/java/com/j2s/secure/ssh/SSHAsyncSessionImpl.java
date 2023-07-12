@@ -6,10 +6,7 @@ import com.j2s.secure.ssh.ex.SSHTriggerAlreadyExistException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -25,17 +22,22 @@ class SSHAsyncSessionImpl extends SSHAbstractSession implements SSHAsyncSession 
 	}
 
 	@Override
-	protected String read(String prompt) {
+	protected int getDefaultReadTimeout() {
+		return Integer.MAX_VALUE;
+	}
+
+	@Override
+	protected String read(String prompt, int timeOut) {
 		readES.submit(() -> {
 			byte[] b = new byte[1024];
-			while(true) {
+			while (true) {
 				try {
-					if(!channel.isConnected()) {
+					if (!channel.isConnected()) {
 						break;
 					}
-					while(is.available() > 0) {
+					while (is.available() > 0) {
 						int i = is.read(b);
-						if(i < 0) {
+						if (i < 0) {
 							break;
 						}
 						String result = new String(b, 0, i);
@@ -50,6 +52,15 @@ class SSHAsyncSessionImpl extends SSHAbstractSession implements SSHAsyncSession 
 				}
 			}
 		});
+		ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
+		ses.schedule(() -> {
+			try {
+				log.info("[" + getSessionKey() + "]" + " close schedule");
+				close();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}, timeOut, TimeUnit.SECONDS);
 		return null;
 	}
 

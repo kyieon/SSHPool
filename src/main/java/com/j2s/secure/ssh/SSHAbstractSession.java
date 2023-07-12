@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j(topic = "ssh")
 abstract class SSHAbstractSession implements SSHSession {
@@ -49,20 +51,20 @@ abstract class SSHAbstractSession implements SSHSession {
 	}
 
 	@Override
-	public void connect(String host, int port, String id, String pwd) throws JSchException, IOException {
+	public void connect(String host, int port, String id, String pwd) throws Exception {
 		try {
 			session = _connect(host, port, id, pwd);
 			openChannel(session);
 			log.info("[" + getSessionKey() + "]" + " session open.");
-			read(null);
+			read(null, getDefaultReadTimeout());
 		} catch (Exception e) {
 			_close();
-			throw e;
+			throw new Exception(e);
 		}
 	}
 
 	@Override
-	public void connectTunnel(String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws JSchException, IOException {
+	public void connectTunnel(String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws Exception {
 		try {
 			sessionTunnel = _connect(tHost, tPort, tId, tPwd);
 			int lPort = sessionTunnel.setPortForwardingL(0, host, port);
@@ -70,10 +72,10 @@ abstract class SSHAbstractSession implements SSHSession {
 			session = _connect("127.0.0.1", lPort, id, pwd);
 			openChannel(session);
 			log.info("[" + getSessionKey() + "]" + " tunnel session open.");
-			read(null);
+			read(null, getDefaultReadTimeout());
 		} catch (Exception e) {
 			_close();
-			throw e;
+			throw new Exception(e);
 		}
 	}
 
@@ -109,7 +111,7 @@ abstract class SSHAbstractSession implements SSHSession {
 	}
 
 	//parameter option...
-	protected abstract String read(String prompt);
+	protected abstract String read(String prompt, int timeOut) throws ExecutionException, InterruptedException, TimeoutException, IOException;
 
 	@Override
 	public boolean isConnected() {
@@ -121,9 +123,14 @@ abstract class SSHAbstractSession implements SSHSession {
 		try {
 			_close();
 		} finally {
-			log.debug("[" + sessionKey + "]" + " session close.");
+			log.info("[" + sessionKey + "]" + " session close.");
 			SSHSessionManager.INSTANCE.removeSession(sessionKey);
 		}
+	}
+
+	//Second
+	protected int getDefaultReadTimeout() {
+		return 10;
 	}
 
 	@Override

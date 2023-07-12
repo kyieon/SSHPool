@@ -1,30 +1,29 @@
 package com.j2s.secure.ssh;
 
-import java.io.IOException;
-
 import com.j2s.secure.ssh.ex.SSHSessionNotConnectionException;
 import com.j2s.secure.ssh.ex.SSHSessionNotFoundException;
-import com.jcraft.jsch.JSchException;
+
+import java.io.IOException;
 
 @SuppressWarnings("unchecked")
 public class SSHSessionFactory {
 	
-	public static <T extends SSHSession> T openSession(String sessionKey, String host, String id, String pwd, Class<T> clz) throws JSchException, IOException {
+	public static <T extends SSHSession> T openSession(String sessionKey, String host, String id, String pwd, Class<T> clz) throws Exception {
 		return openSession(sessionKey, host, 22, id, pwd, clz);
 	}
 
-	public static <T extends SSHSession> T openSession(String sessionKey, String host, int port, String id, String pwd, Class<T> clz) throws JSchException, IOException {
+	public static <T extends SSHSession> T openSession(String sessionKey, String host, int port, String id, String pwd, Class<T> clz) throws Exception {
 		if (clz.equals(SSHAsyncSession.class)) {
 			return (T) openAsyncSession(sessionKey, host, port, id, pwd);
 		}
 		return (T) openSyncSession(sessionKey, host, port, id, pwd);
 	}
 
-	public static SSHSyncSession openSyncSession(String sessionKey, String host, String id, String pwd) throws JSchException, IOException {
+	public static SSHSyncSession openSyncSession(String sessionKey, String host, String id, String pwd) throws Exception {
 		return openSyncSession(sessionKey, host, 22, id, pwd);
 	}
 	
-	public static SSHSyncSession openSyncSession(String sessionKey, String host, int port, String id, String pwd) throws JSchException, IOException {
+	public static SSHSyncSession openSyncSession(String sessionKey, String host, int port, String id, String pwd) throws Exception {
 		SSHSyncSession sshSession = new SSHSyncSessionImpl(sessionKey);
 		sshSession.connect(host, port, id, pwd);
 		SSHSessionManager.INSTANCE.putSession(sessionKey, sshSession);
@@ -42,18 +41,18 @@ public class SSHSessionFactory {
 	 * @param id			- Server Id
 	 * @param pwd			- Server Pwd
 	 */
-	public static SSHSyncSession openSyncSessionTunnel(String sessionKey, String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws JSchException, IOException {
+	public static SSHSyncSession openSyncSessionTunnel(String sessionKey, String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws Exception {
 		SSHSyncSession sshSession = new SSHSyncSessionImpl(sessionKey);
 		sshSession.connectTunnel(tHost, tPort, tId, tPwd, host, port, id, pwd);
 		SSHSessionManager.INSTANCE.putSession(sessionKey, sshSession);
 		return sshSession;
 	}
 
-	public static SSHAsyncSession openAsyncSession(String sessionKey, String host, String id, String pwd) throws JSchException, IOException {
+	public static SSHAsyncSession openAsyncSession(String sessionKey, String host, String id, String pwd) throws Exception {
 		return openAsyncSession(sessionKey, host, 22, id, pwd);
 	}
 	
-	public static SSHAsyncSession openAsyncSession(String sessionKey, String host, int port, String id, String pwd) throws JSchException, IOException {
+	public static SSHAsyncSession openAsyncSession(String sessionKey, String host, int port, String id, String pwd) throws Exception {
 		SSHAsyncSession sshSession = new SSHAsyncSessionImpl(sessionKey);
 		sshSession.connect(host, port, id, pwd);
 		SSHSessionManager.INSTANCE.putSession(sessionKey, sshSession);
@@ -71,7 +70,7 @@ public class SSHSessionFactory {
 	 * @param id			- Server Id
 	 * @param pwd			- Server Pwd
 	 */
-	public static SSHAsyncSession openAsyncSessionTunnel(String sessionKey, String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws JSchException, IOException {
+	public static SSHAsyncSession openAsyncSessionTunnel(String sessionKey, String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws Exception {
 		SSHAsyncSession sshSession = new SSHAsyncSessionImpl(sessionKey);
 		sshSession.connectTunnel(tHost, tPort, tId, tPwd, host, port, id, pwd);
 		SSHSessionManager.INSTANCE.putSession(sessionKey, sshSession);

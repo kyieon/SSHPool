@@ -33,7 +33,7 @@ enum SSHSessionManager {
 
                 for (Map.Entry<String, SSHSession> e : sessionMap.entrySet()) {
                     SSHSession session = e.getValue();
-                    sb.append(String.format("\tSESSION KEY = [%s][%s][CREATE:%s]]", session.getSessionKey(), session.isConnected(), session.getCreateDate()));
+                    sb.append(String.format("\t%s(%s) = [%s][%s][CREATE:%s]]", session.getClass().getName(), session.getName(), session.getSessionKey(), session.isConnected(), session.getCreateDate()));
                 }
                 sb.append("\n==========================================================\n");
 

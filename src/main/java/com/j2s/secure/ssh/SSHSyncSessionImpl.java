@@ -29,7 +29,7 @@ class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 		try {
 			this.write(command, null, DEFAULT_TIMEOUT);
 		} catch (Exception e) {
-			log.error("", "");
+			log.error("", e);
 		}
 	}
 
@@ -54,17 +54,11 @@ class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 		try {
 			log.debug("[" + getSessionKey() + "] WRITE START :: COMMAND :: " + command);
 			_write(command);
-			Future<String> f = readES.submit(() -> read(prompt));
-			try {
-				String result = f.get(timeOut, TimeUnit.SECONDS);
-				log.trace("[" + getSessionKey() + "] COMMAND :: {} :: RESULT :: {}", command, result);
-				log.debug("[" + getSessionKey() + "] WRITE END   :: COMMAND :: {}", command);
-				return result;
-			} catch (TimeoutException | InterruptedException | ExecutionException e) {
-				_write(CTRL_C);
-				f.cancel(true);
-				throw e;
-			}
+
+			String result = read(prompt, timeOut);
+			log.trace("[" + getSessionKey() + "] COMMAND :: {} :: RESULT :: {}", command, result);
+			log.debug("[" + getSessionKey() + "] WRITE END   :: COMMAND :: {}", command);
+			return result;
 		} catch (IOException e) {
 			errorCount.incrementAndGet();
 			log.error("[" + getSessionKey() + "] [" + displayPoolInfo() + "] WRITE ERROR :: COMMAND :: " + command, e);
@@ -109,7 +103,18 @@ class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 	}
 
 	@Override
-	protected String read(String prompt) {
+	protected String read(String prompt, int timeOut) throws ExecutionException, InterruptedException, TimeoutException, IOException {
+		Future<String> f = readES.submit(() -> _read(prompt));
+		try {
+			return f.get(timeOut, TimeUnit.SECONDS);
+		} catch (TimeoutException | InterruptedException | ExecutionException e) {
+			_write(CTRL_C);
+			f.cancel(true);
+			throw e;
+		}
+	}
+
+	private String _read(String prompt) {
 		StringBuilder sb = new StringBuilder();
 		boolean stop = false;
 		byte[] b = new byte[1024 * 4];
