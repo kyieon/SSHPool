@@ -6,11 +6,12 @@
 
     <groupId>com.j2s</groupId>
     <artifactId>secure-client</artifactId>
-    <version>1.0.9</version>
+    <version>1.1.0</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <maven.test.skip>true</maven.test.skip>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 

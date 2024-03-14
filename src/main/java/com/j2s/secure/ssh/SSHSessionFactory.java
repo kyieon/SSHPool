@@ -24,10 +24,18 @@ public class SSHSessionFactory {
 	}
 	
 	public static SSHSyncSession openSyncSession(String sessionKey, String host, int port, String id, String pwd) throws Exception {
-		SSHSyncSession sshSession = new SSHSyncSessionImpl(sessionKey);
-		sshSession.connect(host, port, id, pwd);
-		SSHSessionManager.INSTANCE.putSession(sessionKey, sshSession);
-		return sshSession;
+		SSHSyncSession sshSession = null;
+		try {
+			sshSession = new SSHSyncSessionImpl(sessionKey);
+			sshSession.connect(host, port, id, pwd);
+			SSHSessionManager.INSTANCE.putSession(sessionKey, sshSession);
+			return sshSession;
+		} catch (Exception e) {
+			if(null != sshSession) {
+				sshSession.close();
+			}
+			throw e;
+		}
 	}
 	
 	/**
@@ -42,10 +50,18 @@ public class SSHSessionFactory {
 	 * @param pwd			- Server Pwd
 	 */
 	public static SSHSyncSession openSyncSessionTunnel(String sessionKey, String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws Exception {
-		SSHSyncSession sshSession = new SSHSyncSessionImpl(sessionKey);
-		sshSession.connectTunnel(tHost, tPort, tId, tPwd, host, port, id, pwd);
-		SSHSessionManager.INSTANCE.putSession(sessionKey, sshSession);
-		return sshSession;
+		SSHSyncSession sshSession = null;
+		try {
+			sshSession = new SSHSyncSessionImpl(sessionKey);
+			sshSession.connectTunnel(tHost, tPort, tId, tPwd, host, port, id, pwd);
+			SSHSessionManager.INSTANCE.putSession(sessionKey, sshSession);
+			return sshSession;
+		} catch (Exception e) {
+			if(null != sshSession) {
+				sshSession.close();
+			}
+			throw e;
+		}
 	}
 
 	public static SSHAsyncSession openAsyncSession(String sessionKey, String host, String id, String pwd) throws Exception {
@@ -53,10 +69,18 @@ public class SSHSessionFactory {
 	}
 	
 	public static SSHAsyncSession openAsyncSession(String sessionKey, String host, int port, String id, String pwd) throws Exception {
-		SSHAsyncSession sshSession = new SSHAsyncSessionImpl(sessionKey);
-		sshSession.connect(host, port, id, pwd);
-		SSHSessionManager.INSTANCE.putSession(sessionKey, sshSession);
-		return sshSession;
+		SSHAsyncSession sshSession = null;
+		try {
+			sshSession = new SSHAsyncSessionImpl(sessionKey);
+			sshSession.connect(host, port, id, pwd);
+			SSHSessionManager.INSTANCE.putSession(sessionKey, sshSession);
+			return sshSession;
+		} catch (Exception e) {
+			if(null != sshSession) {
+				sshSession.close();
+			}
+			throw e;
+		}
 	}
 	
 	/**
@@ -71,10 +95,18 @@ public class SSHSessionFactory {
 	 * @param pwd			- Server Pwd
 	 */
 	public static SSHAsyncSession openAsyncSessionTunnel(String sessionKey, String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws Exception {
-		SSHAsyncSession sshSession = new SSHAsyncSessionImpl(sessionKey);
-		sshSession.connectTunnel(tHost, tPort, tId, tPwd, host, port, id, pwd);
-		SSHSessionManager.INSTANCE.putSession(sessionKey, sshSession);
-		return sshSession;
+		SSHAsyncSession sshSession = null;
+		try {
+			sshSession = new SSHAsyncSessionImpl(sessionKey);
+			sshSession.connectTunnel(tHost, tPort, tId, tPwd, host, port, id, pwd);
+			SSHSessionManager.INSTANCE.putSession(sessionKey, sshSession);
+			return sshSession;
+		} catch (Exception e) {
+			if(null != sshSession) {
+				sshSession.close();
+			}
+			throw e;
+		}
 	}
 	
 	public static <T extends SSHSession> T getSession(String sessionKey) throws IOException, SSHSessionNotFoundException, SSHSessionNotConnectionException {
