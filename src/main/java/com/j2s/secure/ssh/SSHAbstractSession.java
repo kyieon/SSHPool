@@ -53,11 +53,14 @@ abstract class SSHAbstractSession implements SSHSession {
 	@Override
 	public void connect(String host, int port, String id, String pwd) throws Exception {
 		try {
+			log.info("[" + getSessionKey() + "]" + " connect session.");
 			session = _connect(host, port, id, pwd);
 			openChannel(session);
-			log.info("[" + getSessionKey() + "]" + " session open.");
+			log.info("[" + getSessionKey() + "]" + " open session.");
 			read(null, getDefaultReadTimeout());
+			log.info("[" + getSessionKey() + "]" + " available session.");
 		} catch (Exception e) {
+			log.error("[{}] {}", getSessionKey(), e.getMessage());
 			_close();
 			throw new Exception(e);
 		}
@@ -66,14 +69,17 @@ abstract class SSHAbstractSession implements SSHSession {
 	@Override
 	public void connectTunnel(String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws Exception {
 		try {
+			log.info("[" + getSessionKey() + "]" + " tunnel connect session.");
 			sessionTunnel = _connect(tHost, tPort, tId, tPwd);
 			int lPort = sessionTunnel.setPortForwardingL(0, host, port);
 			log.info("[" + getSessionKey() + "]" + " local port forwarding : " + lPort);
 			session = _connect("127.0.0.1", lPort, id, pwd);
 			openChannel(session);
-			log.info("[" + getSessionKey() + "]" + " tunnel session open.");
+			log.info("[" + getSessionKey() + "]" + " tunnel open session.");
 			read(null, getDefaultReadTimeout());
+			log.info("[" + getSessionKey() + "]" + " tunnel available session.");
 		} catch (Exception e) {
+			log.error("[{}] {}", getSessionKey(), e.getMessage());
 			_close();
 			throw new Exception(e);
 		}
@@ -123,7 +129,7 @@ abstract class SSHAbstractSession implements SSHSession {
 		try {
 			_close();
 		} finally {
-			log.info("[" + sessionKey + "]" + " session close.");
+			log.info("[" + sessionKey + "]" + " close session.");
 			SSHSessionManager.INSTANCE.removeSession(sessionKey);
 		}
 	}

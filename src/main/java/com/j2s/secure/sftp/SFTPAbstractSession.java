@@ -36,10 +36,12 @@ abstract class SFTPAbstractSession implements SFTPSession {
 	@Override
 	public void connect(String host, int port, String id, String pwd) throws JSchException, IOException {
 		try {
+			log.info("[" + getSessionKey() + "]" + " connect session.");
 			session = _connect(host, port, id, pwd);
 			openChannel(session);
-			log.info("[" + getSessionKey() + "]" + " session open.");
+			log.info("[" + getSessionKey() + "]" + " open session.");
 		} catch (Exception e) {
+			log.error("[{}] {}", getSessionKey(), e.getMessage());
 			_close();
 			throw e;
 		}
@@ -48,13 +50,15 @@ abstract class SFTPAbstractSession implements SFTPSession {
 	@Override
 	public void connectTunnel(String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws JSchException, IOException {
 		try {
+			log.info("[" + getSessionKey() + "]" + " tunnel connect session.");
 			sessionTunnel = _connect(tHost, tPort, tId, tPwd);
 			int lPort = sessionTunnel.setPortForwardingL(0, host, port);
 			log.info("[" + getSessionKey() + "]" + " local port forwarding : " + lPort);
 			session = _connect("127.0.0.1", lPort, id, pwd);
 			openChannel(session);
-			log.info("[" + getSessionKey() + "]" + " tunnel session open.");
+			log.info("[" + getSessionKey() + "]" + " tunnel open session.");
 		} catch (Exception e) {
+			log.error("[{}] {}", getSessionKey(), e.getMessage());
 			_close();
 			throw e;
 		}
@@ -97,7 +101,7 @@ abstract class SFTPAbstractSession implements SFTPSession {
 		try {
 			_close();
 		} finally {
-			log.debug("[" + sessionKey + "]" + " session close.");
+			log.info("[" + sessionKey + "]" + " close session.");
 			SFTPSessionManager.INSTANCE.removeSession(sessionKey);
 		}
 	}
