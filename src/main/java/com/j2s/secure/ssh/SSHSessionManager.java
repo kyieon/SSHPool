@@ -98,7 +98,7 @@ enum SSHSessionManager {
         try {
             if (null != sshSession) sshSession.close();
         } catch (IOException e) {
-            // nothing...
+            log.error("", e);
         }
     }
 }

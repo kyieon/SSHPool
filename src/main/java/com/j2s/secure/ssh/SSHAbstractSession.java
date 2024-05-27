@@ -104,16 +104,25 @@ abstract class SSHAbstractSession implements SSHSession {
 
 	private Session _connect(String host, int port, String id, String pwd) throws JSchException {
 		JSch jsch = new JSch();
-		File privateKeyFile = new File(System.getProperty("user.home") + "/" + ".ssh" + "/" + "id_rsa");
-		if(privateKeyFile.exists()) {
-			jsch.addIdentity(privateKeyFile.getAbsolutePath());
-		}
+		addSSHPrivateFile(jsch);
+
 		Session session = jsch.getSession(id, host, port);
 		session.setTimeout(10 * 1000);
 		session.setPassword(pwd);
 		session.setConfig(getConfig());
 		session.connect(10 * 1000);
 		return session;
+	}
+
+	private void addSSHPrivateFile(JSch jsch) {
+		File privateKeyFile = new File(System.getProperty("user.home") + "/" + ".ssh" + "/" + "id_rsa");
+		try {
+			if(privateKeyFile.exists()) {
+				jsch.addIdentity(privateKeyFile.getAbsolutePath());
+			}
+		} catch (Exception e) {
+			log.error("Error: " + privateKeyFile.getAbsolutePath(), e);
+		}
 	}
 
 	//parameter option...
