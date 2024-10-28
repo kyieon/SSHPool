@@ -22,7 +22,7 @@ stateDiagram-v2
         validate --> [*]:success
         validate --> destroy: fail
         
-        create --> [*]:success
+        create --> validate:success
     }
 
     state create {
