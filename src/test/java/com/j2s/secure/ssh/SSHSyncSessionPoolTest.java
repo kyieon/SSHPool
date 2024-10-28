@@ -14,7 +14,7 @@ class SSHSyncSessionPoolTest {
     @BeforeEach
     void before() {
         SSHSessionConfig config = new SSHSessionConfig();
-        config.setHost("13.124.86.77");
+        config.setHost("13.124.86.177");
         config.setPort(22);
         config.setId("ubuntu");
         config.setPwd("VxXbARmNzKwOvKDKV1234ul");
