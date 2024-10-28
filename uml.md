@@ -28,10 +28,12 @@ stateDiagram-v2
     state create {
         direction LR
         _c: connect
+        _c: efa login
     }
     state destroy {
         direction LR
         _d: efa logout
+        _d: exit
     }
 
     state validate {
