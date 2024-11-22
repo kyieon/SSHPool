@@ -162,7 +162,9 @@ class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 			return true;
 		}
 		String[] end_prompts = { "$", "#", "(y/n)", "(yes/no)?", "password:", "Password:", "[yes,no]",
-				"[yes/no/CANCEL]", "[y/n]?", ">):", "(N/Y):", "(Y/N):", "2004h", "\u001B[6n" };
+				"[yes/no/CANCEL]", "[y/n]?", ">):", "(N/Y):", "(Y/N):", "2004h", "\u001B[6n"
+				,":~>" // eccd
+		};
 
 		for (String end_prompt : end_prompts) {
 			if (result.trim().endsWith(end_prompt)) {
