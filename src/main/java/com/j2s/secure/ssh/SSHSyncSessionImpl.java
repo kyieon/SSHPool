@@ -4,6 +4,9 @@ import com.j2s.secure.executors.SecureExecutors;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
@@ -20,8 +23,15 @@ class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 
 	private final Lock l = new ReentrantLock();
 
+	private List<String> custom_end_prompts = new ArrayList<>();
+
 	public SSHSyncSessionImpl(String sessionKey) {
 		super(sessionKey);
+	}
+
+	public SSHSyncSessionImpl(String sessionKey, String ... custom_end_prompts) {
+		super(sessionKey);
+		this.custom_end_prompts.addAll(Arrays.asList(custom_end_prompts));
 	}
 
 	@Override
@@ -172,11 +182,18 @@ class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 			}
 		}
 
+		for (String end_prompt : custom_end_prompts) {
+			if (result.trim().endsWith(end_prompt)) {
+				return true;
+			}
+		}
+
 		return isErrorResultMet(result);
 	}
 
 	private static boolean isErrorResultMet(String result) {
-		String[] errorResults = { "Connection to COM failed", "Maximum number of administrators has been reached",
+		String[] errorResults = { "Connection to COM failed",
+				"Maximum number of administrators has been reached",
 				"Initialization is not complete", };
 		for (String errorResult : errorResults) {
 			if (result.contains(errorResult)) {

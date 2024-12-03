@@ -23,10 +23,13 @@ public class SSHSessionFactory {
 		return openSyncSession(sessionKey, host, 22, id, pwd);
 	}
 	
-	public static SSHSyncSession openSyncSession(String sessionKey, String host, int port, String id, String pwd) throws Exception {
+	public static SSHSyncSession openSyncSession(String sessionKey, String host, int port, String id, String pwd, String ... custom_end_prompts) throws Exception {
 		SSHSyncSession sshSession = null;
 		try {
-			sshSession = new SSHSyncSessionImpl(sessionKey);
+			if (null == custom_end_prompts) {
+				custom_end_prompts = new String[] {};
+			}
+			sshSession = new SSHSyncSessionImpl(sessionKey, custom_end_prompts);
 			sshSession.connect(host, port, id, pwd);
 			SSHSessionManager.INSTANCE.putSession(sessionKey, sshSession);
 			return sshSession;

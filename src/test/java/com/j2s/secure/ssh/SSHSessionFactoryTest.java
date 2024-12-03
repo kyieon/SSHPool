@@ -16,7 +16,7 @@ class SSHSessionFactoryTest {
 
     @Test
     void openSyncSession() {
-        try (SSHSyncSession session = SSHSessionFactory.openSyncSession(sessionKey, host, 22, id, pwd);) {
+        try (SSHSyncSession session = SSHSessionFactory.openSyncSession(sessionKey, host, 22, id, pwd, "a", "b", "c");) {
             String result = session.write("ll");
             System.out.println(result);
             Thread.sleep(20*1000L);
