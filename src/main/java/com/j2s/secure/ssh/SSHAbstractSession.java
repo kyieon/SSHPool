@@ -53,7 +53,7 @@ abstract class SSHAbstractSession implements SSHSession {
 	@Override
 	public void connect(String host, int port, String id, String pwd) throws Exception {
 		try {
-			log.info("[" + getSessionKey() + "]" + " connect session.");
+			log.info("[" + getSessionKey() + "]" + " '" + host + "'" + " connect session.");
 			session = _connect(host, port, id, pwd);
 			openChannel(session);
 			log.info("[" + getSessionKey() + "]" + " open session.");
@@ -69,7 +69,7 @@ abstract class SSHAbstractSession implements SSHSession {
 	@Override
 	public void connectTunnel(String tHost, int tPort, String tId, String tPwd, String host, int port, String id, String pwd) throws Exception {
 		try {
-			log.info("[" + getSessionKey() + "]" + " tunnel connect session.");
+			log.info("[" + getSessionKey() + "]" + " '" + tHost + "->" + host + "'" + " tunnel connect session.");
 			sessionTunnel = _connect(tHost, tPort, tId, tPwd);
 			int lPort = sessionTunnel.setPortForwardingL(0, host, port);
 			log.info("[" + getSessionKey() + "]" + " local port forwarding : " + lPort);
