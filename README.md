@@ -14,3 +14,7 @@ maven deploy
 
 * [2.1.2]
   * Add log (connection ip)
+
+* [2.1.3]
+  * Build setting
+  * Upgrade lib
