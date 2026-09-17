@@ -14,10 +14,10 @@ class SSHSyncSessionPoolTest {
     @BeforeEach
     void before() {
         SSHSessionConfig config = new SSHSessionConfig();
-        config.setHost("13.124.86.177");
+        config.setHost(System.getenv().getOrDefault("SSH_TEST_HOST", "127.0.0.1"));
         config.setPort(22);
-        config.setId("ubuntu");
-        config.setPwd("VxXbARmNzKwOvKDKV1234ul");
+        config.setId(System.getenv().getOrDefault("SSH_TEST_USER", "test-user"));
+        config.setPwd(System.getenv().getOrDefault("SSH_TEST_PASSWORD", "change-me"));
 
         pool = new SSHSyncSessionPool(config);
     }

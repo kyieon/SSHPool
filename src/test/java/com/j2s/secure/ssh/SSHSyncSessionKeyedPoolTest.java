@@ -11,14 +11,15 @@ import java.util.Arrays;
 class SSHSyncSessionKeyedPoolTest {
 
     private SSHSyncSessionKeyedPool pool;
+    private String host = System.getenv().getOrDefault("SSH_TEST_HOST", "127.0.0.1");
 
     @BeforeEach
     void before() {
         SSHSessionKeyedConfig config = new SSHSessionKeyedConfig();
-        config.setHosts(Arrays.asList("10.180.92.250"));
+        config.setHosts(Arrays.asList(host));
         config.setPort(22);
-        config.setId("ngepc");
-        config.setPwd("ngepc./");
+        config.setId(System.getenv().getOrDefault("SSH_TEST_USER", "test-user"));
+        config.setPwd(System.getenv().getOrDefault("SSH_TEST_PASSWORD", "change-me"));
 
         pool = new SSHSyncSessionKeyedPool(config);
     }
@@ -30,7 +31,7 @@ class SSHSyncSessionKeyedPoolTest {
 
     @Test
     void execute() throws Exception {
-        String result = this.pool.execute("10.180.92.250", (session) -> {
+        String result = this.pool.execute(host, (session) -> {
             try {
                 return session.write("ll");
             } catch (IOException e) {

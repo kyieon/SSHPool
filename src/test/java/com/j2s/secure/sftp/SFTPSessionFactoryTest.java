@@ -19,9 +19,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class SFTPSessionFactoryTest {
 
     String sessionKey = UUID.randomUUID().toString();
-    String host = "10.180.92.250";
-    String id = "ngepc";
-    String pwd = "ngepc./";
+    String host = System.getenv().getOrDefault("SSH_TEST_HOST", "127.0.0.1");
+    String id = System.getenv().getOrDefault("SSH_TEST_USER", "test-user");
+    String pwd = System.getenv().getOrDefault("SSH_TEST_PASSWORD", "change-me");
 
     @Test
     void openSession() {
@@ -39,7 +39,10 @@ class SFTPSessionFactoryTest {
 
     @Test
     void openSessionTunnel() {
-        try (SFTPSession sftpSession = SFTPSessionFactory.openSessionTunnel(sessionKey, host, 22, id, pwd, "10.180.93.60", 22, "root", "root123");) {
+        String tunnelHost = System.getenv().getOrDefault("SSH_TEST_TUNNEL_HOST", "127.0.0.1");
+        String tunnelUser = System.getenv().getOrDefault("SSH_TEST_TUNNEL_USER", "test-user");
+        String tunnelPassword = System.getenv().getOrDefault("SSH_TEST_TUNNEL_PASSWORD", "change-me");
+        try (SFTPSession sftpSession = SFTPSessionFactory.openSessionTunnel(sessionKey, host, 22, id, pwd, tunnelHost, 22, tunnelUser, tunnelPassword);) {
             List<ChannelSftp.LsEntry> result = sftpSession.ls();
             System.out.println(result);
             try (InputStream inputStream = sftpSession.get("/etc/hosts")) {

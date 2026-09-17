@@ -10,9 +10,9 @@ class SSHSessionFactoryTest {
 
 
     String sessionKey = UUID.randomUUID().toString();
-    String host = "10.180.92.250";
-    String id = "ngepc";
-    String pwd = "ngepc./";
+    String host = System.getenv().getOrDefault("SSH_TEST_HOST", "127.0.0.1");
+    String id = System.getenv().getOrDefault("SSH_TEST_USER", "test-user");
+    String pwd = System.getenv().getOrDefault("SSH_TEST_PASSWORD", "change-me");
 
     @Test
     void openSyncSession() {
