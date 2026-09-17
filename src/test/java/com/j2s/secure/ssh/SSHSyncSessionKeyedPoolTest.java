@@ -3,12 +3,15 @@ package com.j2s.secure.ssh;
 import com.j2s.secure.SSHSessionKeyedConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
 
+@Disabled("requires a live SSH server with hardcoded credentials")
 class SSHSyncSessionKeyedPoolTest {
+
 
     private SSHSyncSessionKeyedPool pool;
     private String host = System.getenv().getOrDefault("SSH_TEST_HOST", "127.0.0.1");

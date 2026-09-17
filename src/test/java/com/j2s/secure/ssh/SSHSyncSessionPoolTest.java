@@ -3,11 +3,14 @@ package com.j2s.secure.ssh;
 import com.j2s.secure.SSHSessionConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+@Disabled("requires a live SSH server with hardcoded credentials")
 class SSHSyncSessionPoolTest {
+
 
     private SSHSyncSessionPool pool;
 

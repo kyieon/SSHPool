@@ -23,11 +23,17 @@ abstract class SSHAbstractSession implements SSHSession {
 	protected String name;
 	protected String sessionKey;
 	protected LocalDateTime createTime = LocalDateTime.now();
+	protected boolean verifyHostKey = false; //SEC: true -> StrictHostKeyChecking=yes + real known_hosts
 
 	protected final static String CTRL_C = String.valueOf((char)3);
 
 	public SSHAbstractSession(String sessionKey) {
 		this.sessionKey = sessionKey;
+	}
+
+	//SEC: opt-in strict host-key verification; default false keeps the legacy behaviour
+	protected void setVerifyHostKey(boolean verifyHostKey) {
+		this.verifyHostKey = verifyHostKey;
 	}
 
 	@Override
@@ -97,8 +103,12 @@ abstract class SSHAbstractSession implements SSHSession {
 
 	private Properties getConfig() {
 		Properties config = new Properties();
-		config.put("UserKnownHostsFile", "/dev/null");
-		config.put("StrictHostKeyChecking", "no");
+		if (verifyHostKey) {
+			config.put("StrictHostKeyChecking", "yes"); //JSch falls back to ~/.ssh/known_hosts
+		} else {
+			config.put("UserKnownHostsFile", "/dev/null");
+			config.put("StrictHostKeyChecking", "no");
+		}
 		return config;
 	}
 

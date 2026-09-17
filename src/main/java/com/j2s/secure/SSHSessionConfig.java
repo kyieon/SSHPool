@@ -8,7 +8,7 @@ import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "pwd")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SSHSessionConfig {
 	
@@ -16,4 +16,5 @@ public class SSHSessionConfig {
 	int port = 22; //Default
 	String id;
 	String pwd;
+	boolean verifyHostKey = false; //SEC: opt-in strict host-key verification (default off = legacy behaviour)
 }

@@ -18,6 +18,33 @@ import java.util.concurrent.TimeUnit;
 enum SFTPSessionManager {
     INSTANCE;
 
+    /*
+     * Instance field, not a static one. Enum constants are initialized before the class's static
+     * field initializers run, so while the enum constructor below executes a static sessionMap
+     * would still be null - the monitoring task and the expiration listener registered here could
+     * then observe an uninitialized map. As an instance field its initializer runs during the
+     * construction of INSTANCE, before the constructor body, so the map is always published
+     * before anything can read it.
+     */
+    private final Map<String, SFTPSession> sessionMap = ExpiringMap.builder()
+            .expirationPolicy(ExpirationPolicy.ACCESSED)
+            .variableExpiration()
+            .expiration(10, TimeUnit.MINUTES)
+            .asyncExpirationListener((k, v) -> onExpiration(k, (SFTPSession) v))
+            .build();
+
+    /*
+     * Called by ExpiringMap when a session expires. Expiration is dispatched asynchronously, so
+     * the monitor acquired here is the same one getSession() holds: an expiring session can no
+     * longer be closed while it is concurrently being handed out to a caller.
+     */
+    private void onExpiration(Object sessionKey, SFTPSession session) {
+        log.info(sessionKey + " expire session.");
+        synchronized (sessionMap) {
+            _close(session);
+        }
+    }
+
     SFTPSessionManager() {
         SessionTimer.schedule(new TimerTask() {
             @Override
@@ -42,16 +69,6 @@ enum SFTPSessionManager {
         }, 10, 60);
     }
 
-	private static final Map<String, SFTPSession> sessionMap = ExpiringMap.builder()
-			.expirationPolicy(ExpirationPolicy.ACCESSED)
-			.variableExpiration()
-			.expiration(10, TimeUnit.MINUTES)
-			.asyncExpirationListener((k, v) -> { 
-				log.info(k + " expire session.");
-				SFTPSessionManager.INSTANCE._close((SFTPSession) v);
-			})
-			.build();
-
     public boolean isSession(String sessionKey) {
         return sessionMap.containsKey(sessionKey);
     }
@@ -63,16 +80,23 @@ enum SFTPSessionManager {
         sessionMap.put(sessionKey, sshSession);
     }
 
+    /*
+     * Lookup, connection check and hand-out are atomic with respect to expiration: the async
+     * expiration listener acquires the same monitor before closing a session, so a session can no
+     * longer expire between the isConnected() check and the caller receiving it.
+     */
     public SFTPSession getSession(String sessionKey) throws SFTPSessionNotFoundException, SFTPSessionNotConnectionException {
-        SFTPSession sftpSession = sessionMap.get(sessionKey);
-        if (null == sftpSession) {
-            throw new SFTPSessionNotFoundException("'" + sessionKey + "' session is not found.");
+        synchronized (sessionMap) {
+            SFTPSession sftpSession = sessionMap.get(sessionKey);
+            if (null == sftpSession) {
+                throw new SFTPSessionNotFoundException("'" + sessionKey + "' session is not found.");
+            }
+            if (!sftpSession.isConnected()) {
+                close(sessionKey);
+                throw new SFTPSessionNotConnectionException("'" + sessionKey + "' session not connection.");
+            }
+            return sftpSession;
         }
-        if (!sftpSession.isConnected()) {
-            close(sessionKey);
-            throw new SFTPSessionNotConnectionException("'" + sessionKey + "' session not connection.");
-        }
-        return sftpSession;
     }
 
     void removeSession(String sessionKey) {
