@@ -1,12 +1,15 @@
 package com.j2s.secure.ssh;
 
 import com.jcraft.jsch.JSchException;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.UUID;
 
+@Disabled("requires a live SSH server with hardcoded credentials")
 class SSHSessionFactoryTest {
+
 
 
     String sessionKey = UUID.randomUUID().toString();

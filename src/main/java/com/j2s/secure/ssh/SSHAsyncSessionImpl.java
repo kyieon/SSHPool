@@ -17,6 +17,11 @@ class SSHAsyncSessionImpl extends SSHAbstractSession implements SSHAsyncSession 
 	private ExecutorService sendES = SecureExecutors.newFixedThreadPool(1, "SSHAsyncSessionSender");
 	private BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
 
+	private final AtomicBoolean readerStarted = new AtomicBoolean(false);
+	private final AtomicBoolean onTriggerStart = new AtomicBoolean(false);
+	private final AtomicBoolean idleTimeoutScheduled = new AtomicBoolean(false);
+	private volatile ScheduledExecutorService idleTimeoutExecutor;
+
 	public SSHAsyncSessionImpl(String sessionKey) {
 		super(sessionKey);
 	}
@@ -28,6 +33,21 @@ class SSHAsyncSessionImpl extends SSHAbstractSession implements SSHAsyncSession 
 
 	@Override
 	protected String read(String prompt, int timeOut) {
+		startReader();
+		scheduleIdleTimeout(timeOut);
+		return null;
+	}
+
+	/**
+	 * Starts the background reader loop exactly once. Without the guard every read()
+	 * call stacks another reader task on the single-thread executor and each of them
+	 * pushes duplicate data into the shared message queue.
+	 */
+	private void startReader() {
+		if (!readerStarted.compareAndSet(false, true)) {
+			log.debug("[{}] reader already started.", getSessionKey());
+			return;
+		}
 		readES.submit(() -> {
 			byte[] b = new byte[1024];
 			while (true) {
@@ -40,8 +60,7 @@ class SSHAsyncSessionImpl extends SSHAbstractSession implements SSHAsyncSession 
 						if (i < 0) {
 							break;
 						}
-						String result = new String(b, 0, i);
-						messageQueue.put(result);
+						messageQueue.put(new String(b, 0, i));
 					}
 					Thread.sleep(100L);
 				} catch (InterruptedException e) {
@@ -52,16 +71,32 @@ class SSHAsyncSessionImpl extends SSHAbstractSession implements SSHAsyncSession 
 				}
 			}
 		});
-		ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
-		ses.schedule(() -> {
+	}
+
+	/**
+	 * Schedules the idle-timeout close exactly once on a single reusable scheduler
+	 * that is shut down by close(). The async default timeout is Integer.MAX_VALUE
+	 * (~68 years away) which is treated as "no timeout", so no scheduler thread is
+	 * kept alive for nothing.
+	 */
+	private void scheduleIdleTimeout(int timeOut) {
+		if (timeOut <= 0 || timeOut == Integer.MAX_VALUE) {
+			return;
+		}
+		if (!idleTimeoutScheduled.compareAndSet(false, true)) {
+			return;
+		}
+		if (null == idleTimeoutExecutor) {
+			idleTimeoutExecutor = Executors.newSingleThreadScheduledExecutor();
+		}
+		idleTimeoutExecutor.schedule(() -> {
 			try {
 				log.info("[" + getSessionKey() + "]" + " close schedule");
 				close();
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				log.error("[" + getSessionKey() + "] scheduled close failed.", e);
 			}
 		}, timeOut, TimeUnit.SECONDS);
-		return null;
 	}
 
 	@Override
@@ -78,26 +113,27 @@ class SSHAsyncSessionImpl extends SSHAbstractSession implements SSHAsyncSession 
 
 	@Override
 	public void close() throws IOException {
+		ScheduledExecutorService scheduler = idleTimeoutExecutor;
+		if (null != scheduler) {
+			scheduler.shutdown();
+		}
 		readES.shutdown();
 		sendES.shutdown();
 		messageQueue.clear();
 		super.close();
 	}
 
-	private AtomicBoolean onTriggerStart = new AtomicBoolean(false);
-
 	@Override
 	public void onTrigger(Consumer<SSHAsyncMessage> consumer) throws SSHTriggerAlreadyExistException {
-		if(onTriggerStart.get()) {
-			throw new SSHTriggerAlreadyExistException();
-		}
-
 		synchronized (this) {
+			if (!onTriggerStart.compareAndSet(false, true)) {
+				throw new SSHTriggerAlreadyExistException();
+			}
 			sendES.submit(() -> {
-				while(true) {
+				while (true) {
 					try {
 						String message = messageQueue.poll(100L, TimeUnit.MILLISECONDS);
-						if(null == message) {
+						if (null == message) {
 							continue;
 						}
 						consumer.accept(new SSHAsyncMessage(sessionKey, message));
@@ -107,7 +143,6 @@ class SSHAsyncSessionImpl extends SSHAbstractSession implements SSHAsyncSession 
 					}
 				}
 			});
-			onTriggerStart.set(true);
 		}
 	}
 }

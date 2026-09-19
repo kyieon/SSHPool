@@ -15,6 +15,10 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j(topic = "ssh")
 class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 
+	private static final String[] DEFAULT_END_PROMPTS = { "$", "#", "(y/n)", "(yes/no)?", "password:", "Password:",
+			"[yes,no]", "[yes/no/CANCEL]", "[y/n]?", ">):", "(N/Y):", "(Y/N):", "2004h", "\u001B[6n", ":~>" // eccd
+	};
+
 	private final int DEFAULT_TIMEOUT = 60;
 
 	private ExecutorService readES = SecureExecutors.newFixedThreadPool(1, "SSHSyncSessionReader");
@@ -114,7 +118,15 @@ class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 
 	@Override
 	protected String read(String prompt, int timeOut) throws ExecutionException, InterruptedException, TimeoutException, IOException {
-		Future<String> f = readES.submit(() -> _read(prompt));
+		Future<String> f = readES.submit(() -> {
+			try {
+				return _read(prompt);
+			} catch (IOException e) {
+				// Surface read failures through the Future instead of swallowing them.
+				// write(...) converts this ExecutionException back into an IOException.
+				throw new ExecutionException(e);
+			}
+		});
 		try {
 			return f.get(timeOut, TimeUnit.SECONDS);
 		} catch (TimeoutException | InterruptedException | ExecutionException e) {
@@ -124,7 +136,7 @@ class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 		}
 	}
 
-	private String _read(String prompt) {
+	private String _read(String prompt) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		boolean stop = false;
 		byte[] b = new byte[1024 * 4];
@@ -134,6 +146,9 @@ class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 				while (is.available() > 0) {
 					int i = is.read(b);
 					if (i < 0) {
+						// End-of-stream: the peer closed the channel. This is a normal
+						// termination, not an error, so stop and return what was read.
+						stop = true;
 						break;
 					}
 					String result = new String(b, 0, i);
@@ -161,9 +176,16 @@ class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 				}
 				Thread.sleep(100L);
 			}
-		} catch (Exception e) {
-			// nothing...
+		} catch (InterruptedException e) {
+			// The reader was interrupted (e.g. a timed-out read was cancelled).
+			// Preserve the interrupt status and report the failure rather than
+			// returning an empty string that looks like a successful empty response.
+			Thread.currentThread().interrupt();
+			throw new IOException("[" + getSessionKey() + "] Read interrupted", e);
 		}
+		// NOTE: IOException from is.available()/is.read() is deliberately NOT caught
+		// here; it propagates to read(...) where it is wrapped and surfaced so callers
+		// can distinguish a failed read from an empty-but-successful response.
 		return sb.toString();
 	}
 
@@ -171,12 +193,8 @@ class SSHSyncSessionImpl extends SSHAbstractSession implements SSHSyncSession {
 		if (result == null) {
 			return true;
 		}
-		String[] end_prompts = { "$", "#", "(y/n)", "(yes/no)?", "password:", "Password:", "[yes,no]",
-				"[yes/no/CANCEL]", "[y/n]?", ">):", "(N/Y):", "(Y/N):", "2004h", "\u001B[6n"
-				,":~>" // eccd
-		};
 
-		for (String end_prompt : end_prompts) {
+		for (String end_prompt : DEFAULT_END_PROMPTS) {
 			if (result.trim().endsWith(end_prompt)) {
 				return true;
 			}

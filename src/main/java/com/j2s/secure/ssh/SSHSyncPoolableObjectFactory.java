@@ -21,9 +21,10 @@ public class SSHSyncPoolableObjectFactory extends BasePooledObjectFactory<SSHSyn
 	@Override
 	public SSHSyncSession create() throws Exception {
 		String sessionKey = UUID.randomUUID().toString();
-		SSHSyncSession session = null;
+		SSHSyncSessionImpl session = null;
 		try {
 			session = new SSHSyncSessionImpl(sessionKey);
+			session.setVerifyHostKey(sshSessionConfig.isVerifyHostKey());
 			session.connect(sshSessionConfig.getHost(), sshSessionConfig.getPort(), sshSessionConfig.getId(), sshSessionConfig.getPwd());
 			log.info("[{}] makeObject.", session.getSessionKey());
 			return session;

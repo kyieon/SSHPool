@@ -6,6 +6,7 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -16,7 +17,9 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Disabled("requires a live SSH server with hardcoded credentials")
 class SFTPSessionFactoryTest {
+
 
     String sessionKey = UUID.randomUUID().toString();
     String host = System.getenv().getOrDefault("SSH_TEST_HOST", "127.0.0.1");

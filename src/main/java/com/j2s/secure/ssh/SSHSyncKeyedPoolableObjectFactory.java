@@ -31,9 +31,10 @@ public class SSHSyncKeyedPoolableObjectFactory extends BaseKeyedPooledObjectFact
             throw new SSHSessionNotFoundException(String.format("'%s' session is not found.", host));
         }
         String sessionKey = UUID.randomUUID().toString();
-        SSHSyncSession session = null;
+        SSHSyncSessionImpl session = null;
         try {
             session = new SSHSyncSessionImpl(sessionKey);
+            session.setVerifyHostKey(sshSessionConfig.isVerifyHostKey());
             session.connect(host, sshSessionConfig.getPort(), sshSessionConfig.getId(), sshSessionConfig.getPwd());
             log.info("[{}][{}] makeObject.", session.getSessionKey(), host);
             return session;
